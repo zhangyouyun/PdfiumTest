@@ -54,11 +54,10 @@ public class PdfActivity extends ActionBarActivity {
     private final Matrix mTransformMatrix = new Matrix();
     private boolean isScaling = false;
     private boolean isReset = true;
-    private float testX=20f;
-    private float testY=20f;
     private static final float MAX_SCALE = 2.0f;
-    private static final float MIN_SCALE = 0.7f;
+    private static final float MIN_SCALE = 1.0f;
     private Context mContext;
+//    Java线程池ExecutorService
     private final ExecutorService mPreLoadPageWorker = Executors.newSingleThreadExecutor();
     private final ExecutorService mRenderPageWorker = Executors.newSingleThreadExecutor();
     private Runnable mRenderRunnable;
@@ -220,7 +219,6 @@ public class PdfActivity extends ActionBarActivity {
                 mPageRect.right = (int)pageWidth;
             }
         }else{
-
             /**Landscape**/
             if( pageWidth > pageHeight ){
                 //Situation one: fit height
@@ -263,7 +261,13 @@ public class PdfActivity extends ActionBarActivity {
 
         return ret;
     }
-
+/*    Android sdk给我们提供了GestureDetector（Gesture：手势Detector：识别）类，通过这个类我们可以识别很多的手势，
+主要是通过他的onTouchEvent(event)方法完成了不同手势的识别。虽然他能识别手势，但是不同的手势要怎么处理，
+应该是提供给程序员实现的，因此这个类对外提供了两个接口：OnGestureListener，OnDoubleTapListener，
+还有一个内部类SimpleOnGestureListener，SimpleOnGestureListener类是GestureDetector提供给我们的一个更方便的响应不同手势的类，
+这个类实现了上述两个接口（但是所有的方法体都是空的），该类是static class，
+也就是说它实际上是一个外部类。程序员可以在外部继承这个类，重写里面的手势处理方法。
+    通过GestureDetector的构造方法可以将SimpleOnGestureListener对象传递进去，这样GestureDetector能处理不同的手势了。*/
     private class SlidingDetector extends GestureDetector.SimpleOnGestureListener {
             /*滑动*/
         private boolean checkFlippable(){
@@ -419,12 +423,9 @@ public class PdfActivity extends ActionBarActivity {
             mPdfCore.renderPage(mPdfDoc, mPdfSurfaceHolder.getSurface(), mCurrentPageIndex,
                     mPageRect.left, mPageRect.top,
                     mPageRect.width(), mPageRect.height());
-
-
-            return true;
+         return true;
         }
 
-        @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY){
             if(!isSurfaceCreated) return false;
             if(velocityX == 0f) return false;
@@ -494,8 +495,6 @@ public class PdfActivity extends ActionBarActivity {
                 MainActivity.SCALE=MainActivity.SCALE*scaleValue;
             }
             Log.e("倍数","MainActivity.SCALE="+MainActivity.SCALE+",scaleValue="+scaleValue);
-//            mTransformMatrix.setScale(scaleValue,scaleValue,
-//                    detector.getFocusX(), detector.getFocusY());
 
             mPageRectF.set(mPageRect);
             mTransformMatrix.mapRect(mPageRectF);
@@ -519,8 +518,6 @@ public class PdfActivity extends ActionBarActivity {
             isScaling = false;
         }
     }
-
-    @Override
     public void onDestroy(){
         try{
             if(mPdfDoc != null && mDocFileStream != null){
