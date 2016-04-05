@@ -116,7 +116,6 @@ public class PdfiumCore {
                            int startX, int startY, int drawSizeX, int drawSizeY){
         synchronized (doc.Lock){
             try{
-                //nativeRenderPage(doc.mNativePagesPtr.get(pageIndex), surface, mCurrentDpi);
                 nativeRenderPage(doc.mNativePagesPtr.get(pageIndex), surface, mCurrentDpi,
                                     startX, startY, drawSizeX, drawSizeY);
             }catch(NullPointerException e){

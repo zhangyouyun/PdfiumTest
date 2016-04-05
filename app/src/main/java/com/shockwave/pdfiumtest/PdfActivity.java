@@ -54,7 +54,7 @@ public class PdfActivity extends ActionBarActivity {
     private final Matrix mTransformMatrix = new Matrix();
     private boolean isScaling = false;
     private boolean isReset = true;
-    private static final float MAX_SCALE = 2.0f;
+    private static final float MAX_SCALE = 2.5f;
     private static final float MIN_SCALE = 1.0f;
     private Context mContext;
 //    Java线程池ExecutorService
@@ -122,11 +122,13 @@ public class PdfActivity extends ActionBarActivity {
              * 当SurfaceView创建的时候，调用此函数
              */
             public void surfaceCreated(SurfaceHolder holder) {
+                Log.e(TAG, "Surface 产生");
                 isSurfaceCreated = true;
                 updateSurface(holder);
                 if (mPdfDoc != null) {
                     mRenderPageWorker.submit(mRenderRunnable);
                 }
+
 //                Draw();
             }
             /**
@@ -138,6 +140,7 @@ public class PdfActivity extends ActionBarActivity {
                 if(mPdfDoc != null){
                     mRenderPageWorker.submit(mRenderRunnable);
                 }
+//                holder.setFixedSize(width, height);
             }
             /**
              * 当SurfaceView销毁的时候，调用此函数
@@ -184,12 +187,12 @@ public class PdfActivity extends ActionBarActivity {
             mPdfCore.openPage(mPdfDoc, pageIndex);
         }
     }
-
+        //更新
     private void updateSurface(SurfaceHolder holder){
         mPdfSurfaceHolder = holder;
         mScreenRect.set(holder.getSurfaceFrame());
     }
-//    重置页
+        //    重置页
     private void resetPageFit(int pageIndex){
         float pageWidth = mPdfCore.getPageWidth(mPdfDoc, pageIndex);
         float pageHeight = mPdfCore.getPageHeight(mPdfDoc, pageIndex);
@@ -200,7 +203,7 @@ public class PdfActivity extends ActionBarActivity {
         /**Portrait**/
         if(screenWidth < screenHeight){
             if( (pageWidth / pageHeight) < (screenWidth / screenHeight) ){
-                //Situation one: fit height
+                //Situation one: fit height 情况之一：适合高度
                 pageWidth *= (screenHeight / pageHeight);
                 pageHeight = screenHeight;
 
@@ -209,7 +212,7 @@ public class PdfActivity extends ActionBarActivity {
                 mPageRect.right = (int)(mPageRect.left + pageWidth);
                 mPageRect.bottom = (int)pageHeight;
             }else{
-                //Situation two: fit width
+                //Situation two: fit width 情况二：适合宽度
                 pageHeight *= (screenWidth / pageWidth);
                 pageWidth = screenWidth;
 
@@ -331,8 +334,10 @@ public class PdfActivity extends ActionBarActivity {
 //            if(mPageRect.bottom+distanceY>mScreenRect.bottom&&distanceY>0&&mPageRect.top>mScreenRect.top ){
 //                distanceY= 0f;
 //
-//            }
-          if(mPageRect.left+distanceX<mScreenRect.left&&mPageRect.right<=mScreenRect.right&&distanceX<0){
+//            }||
+
+          if(mPageRect.left+distanceX<mScreenRect.left && mPageRect.right<=mScreenRect.right&&
+                  distanceX<0){
                 if(mPageRect.left>=mScreenRect.left){
                     distanceX=-mPageRect.left;
                    Log.d("ddddddd","1");
@@ -341,6 +346,15 @@ public class PdfActivity extends ActionBarActivity {
                    Log.d("ddddddd","2");
                   }
                 }
+            if(mPageRect.left+distanceX>mScreenRect.left&&mPageRect.right>=mScreenRect.right&&distanceX>0){
+                if(mPageRect.left<=mScreenRect.left){
+                    distanceX=-mPageRect.left;
+                    Log.d("ddddddd","11");
+                }else{
+                    distanceX=0f;
+                    Log.d("ddddddd","12");
+                }
+            }
 
         if(mPageRect.right+distanceX>mScreenRect.right&&mPageRect.left>=mScreenRect.left&&distanceX>0){
              if(mPageRect.right<=mScreenRect.right){
@@ -360,15 +374,7 @@ public class PdfActivity extends ActionBarActivity {
                   Log.d("ddddddd","10");
                 }
          }
-           if(mPageRect.left+distanceX>mScreenRect.left&&mPageRect.right>=mScreenRect.right&&distanceX>0){
-                if(mPageRect.left<=mScreenRect.left){
-                    distanceX=-mPageRect.left;
-                    Log.d("ddddddd","11");
-                    }else{
-                  distanceX=0f;
-                    Log.d("ddddddd","12");
-                   }
-              }
+
 
           if(mPageRect.top+distanceY<mScreenRect.top&&mPageRect.bottom<=mScreenRect.bottom&&distanceY<0){
                 if(mPageRect.top>=mScreenRect.top){
@@ -379,6 +385,15 @@ public class PdfActivity extends ActionBarActivity {
                Log.d("ddddddd","6");
                     }
                 }
+            if(mPageRect.top+distanceY>mScreenRect.top&&mPageRect.bottom>=mScreenRect.bottom&&distanceY>0){
+                if(mPageRect.top<=mScreenRect.top){
+                    distanceY=-mPageRect.top;
+                    Log.d("ddddddd","15");
+                }else{
+                    distanceY=0f;
+                    Log.d("ddddddd","16");
+                }
+            }
             if(mPageRect.bottom+distanceY<mScreenRect.bottom&&mPageRect.top<=mScreenRect.top&&distanceY<0){
                 if(mPageRect.bottom>=mScreenRect.bottom){
                 distanceY=mScreenRect.bottom-mPageRect.bottom;
@@ -397,15 +412,7 @@ public class PdfActivity extends ActionBarActivity {
           Log.d("ddddddd","8");
                    }
                 }
-            if(mPageRect.top+distanceY>mScreenRect.top&&mPageRect.bottom>=mScreenRect.bottom&&distanceY>0){
-               if(mPageRect.top<=mScreenRect.top){
-                 distanceY=-mPageRect.top;
-                    Log.d("ddddddd","15");
-                    }else{
-                  distanceY=0f;
-                    Log.d("ddddddd","16");
-                    }
-            }
+
             //Portrait restriction
 //               纵向限制
             if(isReset && mScreenRect.width() < mScreenRect.height()) distanceX = distanceY = 0f;
@@ -425,7 +432,7 @@ public class PdfActivity extends ActionBarActivity {
                     mPageRect.width(), mPageRect.height());
          return true;
         }
-
+    /*判断滑动*/
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY){
             if(!isSurfaceCreated) return false;
             if(velocityX == 0f) return false;
@@ -466,6 +473,7 @@ public class PdfActivity extends ActionBarActivity {
         @Override
         public boolean onScaleBegin(ScaleGestureDetector detector){
             isScaling = true;
+
             return true;
         }
         public boolean onScale(ScaleGestureDetector detector){
@@ -495,8 +503,8 @@ public class PdfActivity extends ActionBarActivity {
                 MainActivity.SCALE=MainActivity.SCALE*scaleValue;
             }
             Log.e("倍数","MainActivity.SCALE="+MainActivity.SCALE+",scaleValue="+scaleValue);
-
             mPageRectF.set(mPageRect);
+
             mTransformMatrix.mapRect(mPageRectF);
             rectF2Rect(mPageRectF, mPageRect);
             mPdfCore.renderPage(mPdfDoc, mPdfSurfaceHolder.getSurface(), mCurrentPageIndex,
